@@ -42,9 +42,78 @@
                 width: 100%;
                 height: 100%;
             }
+
+            #controls { 
+                position: absolute; 
+                top: 10px; 
+                left: 10px; 
+                z-index: 100;
+                 
+            }
+
+            #controls button { 
+            background: rgba(0, 0, 0, 0.5);
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 12px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s, transform 0.3s;
+            }
+
+            #controlPanel {
+            width: 220px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: absolute;
+            right: 0;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 10px;
+            color: white;
+            }
+
+            #controlPanel div {
+            height: 30px;
+            margin-bottom: 10px;
+            text-align: center;
+            font-size: 16px;
+            }
+
+            #controlPanel input[type="range"] {
+                width: 200px;
+                height: 20px;
+                margin-bottom: 20px;
+            }
+
+
         </style>
     </head>
 <body>
+
+    <div id="controls">
+        <button id="OO">MAIN</button>
+        <button id="aa">View A</button>
+        <button id="bb">View B</button>
+        <button id="cc">View C</button>
+        <button id="dd">SQUARE</button>
+    </div>
+
+    <div id="controlPanel">
+        <div id="headerY">Y-rotation: 0 deg</div>
+        <input type="range" id="sliderY" min="-35" max="0" step="0.1" value="-35">
+        <div id="headerX">X-rotation: 0 deg</div>
+        <input type="range" id="sliderX" min="-35" max="40" step="0.1" value="-35">
+    </div>
+
+    <script src="script.js"></script>
+
     <div id="canvasZone"><canvas id="renderCanvas"></canvas></div>
     <script>
         var canvas = document.getElementById("renderCanvas");
@@ -62,33 +131,233 @@
         var sceneToRender = null;
         var createDefaultEngine = function() { return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true,  disableWebGL2Support: false}); };
         var createScene = function () {
-    // This creates a basic Babylon Scene object (non-mesh)
-    var scene = new BABYLON.Scene(engine);
 
- var camera = new BABYLON.ArcRotateCamera("camera", BABYLON.Tools.ToRadians(90), BABYLON.Tools.ToRadians(65), 10, BABYLON.Vector3.Zero(), scene);
+    /*
+     * FIRST SCENE
+     */
+    var firstScene = new BABYLON.Scene(engine);
+    firstScene.clearColor = new BABYLON.Color3(0.03, 0.03, 0.55);
+    
+    var firstSceneCamera = new BABYLON.ArcRotateCamera("camera1", 0, 0, 10, new BABYLON.Vector3(0, 0, -0), firstScene);
+    firstSceneCamera.setPosition(new BABYLON.Vector3(0, 20, -100));
+    firstSceneCamera.attachControl(canvas, true);
+    
+    //var firstSceneLight = new BABYLON.PointLight("firstSceneLight", new BABYLON.Vector3(0,0,10));
+    //firstSceneLight.intensity = 0.75;
+    //firstSceneLight.specular = new BABYLON.Color3(0.95, 0.95, 0.81);
+    var light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0,0,10), scene);
 
-    // This attaches the camera to the canvas
-    camera.attachControl(canvas, true);
 
-    // This creates a light, aiming 0,1,0 - to the sky (non-mesh)
-    var light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
+    //var firstSceneObject = BABYLON.MeshBuilder.CreateTorusKnot("scene0Object", {radius: 3, tube: 1}, firstScene);
 
-    // Default intensity is 1. Let's dim the light a small amount
-    light.intensity = 0.7;
+    // Create three ArcRotateCameras
+    
+    const cameraA = new BABYLON.ArcRotateCamera('cameraA', Math.PI / 2, Math.PI / 2, 5, new BABYLON.Vector3(0, 1, 0), firstScene);
+    const cameraB = new BABYLON.ArcRotateCamera('cameraB', Math.PI / 2, Math.PI / 2, 5, new BABYLON.Vector3(10, 1, 0), firstScene);
+    const cameraC = new BABYLON.ArcRotateCamera('cameraC', Math.PI / 2, Math.PI / 2, 5, new BABYLON.Vector3(-10, 1, 0), firstScene);
 
-    // Our built-in 'ground' shape.
-    var ground = BABYLON.MeshBuilder.CreateGround("ground", {width: 6, height: 6}, scene);
-    let groundMaterial = new BABYLON.StandardMaterial("Ground Material", scene);
-    ground.material = groundMaterial;
-    let groundTexture = new BABYLON.Texture(Assets.textures.checkerboard_basecolor_png.path, scene);
-    groundMaterial.diffuseColor = BABYLON.Color3.Red();
-    ground.material.diffuseTexture = groundTexture;
+    // Create three meshes
+    const meshAAA = BABYLON.MeshBuilder.CreateBox('aaa', { size: 0.5 }, scene);
+          meshAAA.position = new BABYLON.Vector3(0, 1, -4);
+          meshAAA.visibility = 0;
 
-    BABYLON.SceneLoader.ImportMesh("", Assets.meshes.Yeti.rootUrl, Assets.meshes.Yeti.filename, scene, function(newMeshes){
-        newMeshes[0].scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
+    const meshBBB = BABYLON.MeshBuilder.CreateSphere('bbb', { diameter: 0.5 }, scene);
+          meshBBB.position = new BABYLON.Vector3(10, 2, 0);
+          meshBBB.visibility = 0;
+
+    const meshCCC = BABYLON.MeshBuilder.CreateCylinder('ccc', { height: 0.5, diameter: 0.5 }, scene);
+          meshCCC.position = new BABYLON.Vector3(-10, 1, 0);
+          meshCCC.visibility = 0;
+    // Create three meshes
+    
+            //const skull = BABYLON.MeshBuilder.CreateBox("skull", {}, firstScene);
+
+    // Load assets
+    BABYLON.SceneLoader.ImportMesh("", "assets/", "snu_full_building.glb", firstScene, function (meshes) {          
+                 if (meshes.length > 0) {
+                     const importedMesh = meshes[0];
+                     arcRotateCamera.target = importedMesh;
+                     
+                 }
+            });
+    // Control elements
+    
+    const headerY = document.getElementById("headerY");
+    const sliderY = document.getElementById("sliderY");
+    sliderY.addEventListener("input", function () {
+        const value = parseFloat(sliderY.value);
+        headerY.textContent = "Y-rotation: " + value + " deg";
+        firstScene.clipPlane4 = new BABYLON.Plane(0, 1, 0, value);
     });
 
-    return scene;
+    const headerX = document.getElementById("headerX");
+    const sliderX = document.getElementById("sliderX");
+    sliderX.addEventListener("input", function () {
+        const value = parseFloat(sliderX.value);
+        headerX.textContent = "X-rotation: " + value + " deg";
+        firstScene.clipPlane3 = new BABYLON.Plane(-1, 0, 0, value);
+    });
+
+    /*
+     * SECOND SCENE
+     */
+    var secondScene = new BABYLON.Scene(engine);
+    secondScene.clearColor = new BABYLON.Color3(0.67, 0.47, 0.16);
+    
+
+    var camera1 = new BABYLON.ArcRotateCamera("camera1", Math.PI / 2, Math.PI / 4, 10, new BABYLON.Vector3(5, 45, 10), secondScene);
+        camera1.attachControl(canvas, true);
+        camera1.lowerRadiusLimit = 2;
+        camera1.upperRadiusLimit = 30;
+        camera1.wheelDeltaPercentage = 0.05;
+
+            secondScene.activeCamera = camera1;
+
+    var secondSceneLight = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(1, 0.5, 0), secondScene);
+    secondSceneLight.intensity = 0.8;
+
+    // Ground
+    var ground = BABYLON.MeshBuilder.CreateGround("ground", { height: 50, width: 50}, secondScene);
+    var groundMaterial = new BABYLON.StandardMaterial("groundMaterial", secondScene);
+    groundMaterial.diffuseTexture = new BABYLON.Texture("textures/wood.jpg", secondScene);
+    groundMaterial.diffuseTexture.uScale = 30;
+    groundMaterial.diffuseTexture.vScale = 30;
+    groundMaterial.specularColor = new BABYLON.Color3(.1, .1, .1);
+    ground.material = groundMaterial;
+            
+    var sphere1 = BABYLON.MeshBuilder.CreateSphere("sphere1", { segments: 3 }, secondScene);
+    sphere1.position.y = 1;
+    sphere1.material = new BABYLON.StandardMaterial("mat1", secondScene);
+    sphere1.material.wireframe = true;
+
+    // Load hero character
+    var hero;
+            var walkAnim;
+            var animating = false;
+        
+            BABYLON.SceneLoader.ImportMesh("", "https://assets.babylonjs.com/meshes/", "HVGirl.glb", secondScene, function (newMeshes, particleSystems, skeletons, animationGroups) {
+                hero = newMeshes[0];
+                hero.speed = new BABYLON.Vector3(0, 0, 0.08);
+                hero.nextspeed = new BABYLON.Vector3.Zero();
+                hero.scaling.scaleInPlace(0.3);
+                camera1.target = hero;
+        
+                walkAnim = secondScene.getAnimationGroupByName("Walking");
+            });
+        
+            //var player = BABYLON.Mesh.CreateSphere("", 1, 1, scene);
+            //player.speed = new BABYLON.Vector3(0, 0, 0.9);
+            //player.nextspeed = new BABYLON.Vector3.Zero();
+        
+            // Point'n click logic
+            var targetVec;
+            var targetVecNorm;
+            var initVec;
+            var distVec = 0; // Initialize to avoid undefined values
+        
+            var ball = BABYLON.Mesh.CreateSphere("sphere1", 2, 0.5, secondScene);
+            ball.isPickable = false;
+        
+            secondScene.onPointerDown = (e, pickResult) => {
+                document.getElementById('renderCanvas').style.cursor = 'url(http://gamejs.hameron.live/cur.cur),auto';
+                if (e.button === 0) { // left
+                    if (pickResult.hit && pickResult.pickedMesh == ground) {
+                        targetVec = pickResult.pickedPoint;
+                        ball.position = targetVec.clone();
+                        ball.visibility = 0;
+                        if (hero) {
+                            initVec = hero.position.clone();
+                            distVec = BABYLON.Vector3.Distance(targetVec, initVec);
+                            targetVec = targetVec.subtract(initVec);
+                            targetVecNorm = BABYLON.Vector3.Normalize(targetVec);
+                            
+                            // Calculate and set hero's rotation
+                            var forward = new BABYLON.Vector3(0, 0, 1); // Forward direction in local space
+                            var direction = targetVecNorm.clone();
+                            var quaternion = BABYLON.Quaternion.FromLookDirectionLH(direction, BABYLON.Vector3.Up());
+                            hero.rotationQuaternion = quaternion;
+        
+                            // Start walking animation
+                            if (walkAnim && !animating) {
+                                walkAnim.start(true, 1.0, walkAnim.from, walkAnim.to, false);
+                                animating = true;
+                            }
+                        }
+                    }
+                }
+            };
+        
+            secondScene.registerBeforeRender(function () {
+                if (hero && distVec > 0) {
+                    distVec -= 0.1;
+                    hero.translate(targetVecNorm, 0.1, BABYLON.Space.WORLD);
+                } else if (animating) {
+                    // Stop walking animation when the character stops moving
+                    walkAnim.stop();
+                    animating = false;
+                }
+        
+                if (hero) {
+                    hero.speed = BABYLON.Vector3.Lerp(hero.speed, hero.nextspeed, 0.3);
+                }
+            });
+
+
+    /*
+     * GUI SCENE
+     */
+    var guiScene = new BABYLON.Scene(engine);
+    // MARK THE GUI SCENE AUTO CLEAR AS FALSE SO IT DOESN'T ERASE
+    // THE CURRENTLY RENDERING SCENE
+    guiScene.autoClear = false;
+    var guiCamera = new BABYLON.FreeCamera("guiCamera", new BABYLON.Vector3(0,0,0), guiScene);
+
+    //var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI", true, guiScene);
+
+
+
+    var currentActiveScene = firstScene; 
+
+    // Function to switch camera
+    const switchCamera = (camera) => {
+    firstScene.activeCamera.detachControl(canvas);
+    firstScene.activeCamera = camera;
+    firstScene.activeCamera.attachControl(canvas, true);
+};
+
+    // Event listeners for camera buttons
+    document.getElementById('OO').addEventListener('click', () => switchCamera(firstSceneCamera));
+    document.getElementById('aa').addEventListener('click', () => switchCamera(cameraA));
+    document.getElementById('bb').addEventListener('click', () => switchCamera(cameraB));
+    document.getElementById('cc').addEventListener('click', () => switchCamera(cameraC));
+
+    // Event listener for scene switch button
+    document.getElementById('dd').addEventListener('click', () => {
+        if (currentActiveScene === firstScene) {
+            currentActiveScene = secondScene;
+            document.getElementById('controlPanel').style.display = 'none';
+        } else {
+            currentActiveScene = firstScene;
+            document.getElementById('controlPanel').style.display = 'block';
+        }
+
+        // Perform necessary updates when switching scenes
+        // e.g., updating active camera or controls for the new scene
+        currentActiveScene.activeCamera.attachControl(canvas, true);
+    });
+
+    //runRenderLoop inside a setTimeout is neccesary in the Playground
+    //to stop the PG's runRenderLoop.
+    setTimeout(function () {
+        engine.stopRenderLoop();
+
+        engine.runRenderLoop(function () {
+            currentActiveScene.render();
+            guiScene.render();
+        });
+    }, 500);
+
+    return firstScene;
 };
                 window.initFunction = async function() {
                     
